@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import google.generativeai as genai
 
 st.set_page_config(page_title="AI Agent Hub", layout="wide")
 
