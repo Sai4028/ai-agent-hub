@@ -13,64 +13,69 @@ po = pd.read_csv("po.csv")
 
 st.header("Business Insights")
 
-question = st.selectbox(
-    "Select Question",
-    [
-        "Customers above 80% credit limit",
-        "Inventory Value",
-        "Top 10 Customers by Sales",
-        "Open Purchase Orders"
-    ]
+user_query = st.text_input(
+    "Ask a business question"
 )
 
 # Question 1
-if question == "Customers above 80% credit limit":
+if user_query:
 
-    customers["utilization_pct"] = (
-        customers["outstanding"] /
-        customers["credit_limit"]
-    ) * 100
+    query = user_query.lower()
 
-    result = customers[
-        customers["utilization_pct"] >= 80
-    ]
+    # Credit Limit
+    if "credit" in query:
 
-    st.subheader("Customers Above 80% Credit Limit")
-    st.dataframe(result)
+        customers["utilization_pct"] = (
+            customers["outstanding"] /
+            customers["credit_limit"]
+        ) * 100
 
-# Question 2
-elif question == "Inventory Value":
+        result = customers[
+            customers["utilization_pct"] >= 80
+        ]
 
-    inventory["inventory_value"] = (
-        inventory["quantity"] *
-        inventory["unit_price"]
-    )
+        st.subheader("Customers Above 80% Credit Limit")
+        st.dataframe(result)
 
-    total_value = inventory["inventory_value"].sum()
+    # Inventory
+    elif "inventory" in query:
 
-    st.metric(
-        "Total Inventory Value",
-        f"₹{total_value:,.0f}"
-    )
+        inventory["inventory_value"] = (
+            inventory["quantity"] *
+            inventory["unit_price"]
+        )
 
-# Question 3
-elif question == "Top 10 Customers by Sales":
+        total_value = inventory["inventory_value"].sum()
 
-    sales_summary = (
-        sales.groupby("customer_id")["amount"]
-        .sum()
-        .reset_index()
-        .sort_values("amount", ascending=False)
-        .head(10)
-    )
+        st.metric(
+            "Total Inventory Value",
+            f"₹{total_value:,.0f}"
+        )
 
-    st.subheader("Top 10 Customers")
-    st.dataframe(sales_summary)
+    # Sales
+    elif "sales" in query:
 
-# Question 4
-elif question == "Open Purchase Orders":
+        sales_summary = (
+            sales.groupby("customer_id")["amount"]
+            .sum()
+            .reset_index()
+            .sort_values("amount", ascending=False)
+            .head(10)
+        )
 
-    open_po = po[po["status"] == "Open"]
+        st.subheader("Top Customers by Sales")
+        st.dataframe(sales_summary)
 
-    st.subheader("Open Purchase Orders")
-    st.dataframe(open_po)
+    # Purchase Orders
+    elif "purchase" in query or "po" in query:
+
+        open_po = po[po["status"] == "Open"]
+
+        st.subheader("Open Purchase Orders")
+        st.dataframe(open_po)
+
+    else:
+
+        st.warning(
+            "Question not supported yet."
+        )
