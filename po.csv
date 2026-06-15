@@ -1,0 +1,21 @@
+po_no,supplier,po_date,amount,status
+PO001,Supplier 9,2026-01-24,302040,Open
+PO002,Supplier 10,2026-05-12,137570,Closed
+PO003,Supplier 8,2026-01-18,316747,Open
+PO004,Supplier 5,2026-06-08,328073,Delayed
+PO005,Supplier 6,2026-03-24,354368,Open
+PO006,Supplier 6,2026-02-17,432554,Closed
+PO007,Supplier 4,2026-02-10,240015,Delayed
+PO008,Supplier 1,2026-05-04,96108,Open
+PO009,Supplier 3,2026-05-12,197562,Delayed
+PO010,Supplier 1,2026-05-29,216431,Open
+PO011,Supplier 10,2026-04-21,328407,Closed
+PO012,Supplier 7,2026-04-21,454116,Delayed
+PO013,Supplier 9,2026-01-05,309551,Closed
+PO014,Supplier 1,2026-01-19,445971,Delayed
+PO015,Supplier 3,2026-04-21,192708,Delayed
+PO016,Supplier 9,2026-06-08,96948,Delayed
+PO017,Supplier 1,2026-03-06,239240,Delayed
+PO018,Supplier 7,2026-05-17,263180,Open
+PO019,Supplier 2,2026-04-21,350290,Open
+PO020,Supplier 2,2026-04-12,17709,Closed
