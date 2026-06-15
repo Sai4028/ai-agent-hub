@@ -11,24 +11,66 @@ inventory = pd.read_csv("inventory.csv")
 sales = pd.read_csv("sales.csv")
 po = pd.read_csv("po.csv")
 
-# Sidebar
-module = st.sidebar.selectbox(
-    "Select Module",
-    ["Customers", "Inventory", "Sales", "Purchase Orders"]
+st.header("Business Insights")
+
+question = st.selectbox(
+    "Select Question",
+    [
+        "Customers above 80% credit limit",
+        "Inventory Value",
+        "Top 10 Customers by Sales",
+        "Open Purchase Orders"
+    ]
 )
 
-if module == "Customers":
-    st.header("Customers")
-    st.dataframe(customers)
+# Question 1
+if question == "Customers above 80% credit limit":
 
-elif module == "Inventory":
-    st.header("Inventory")
-    st.dataframe(inventory)
+    customers["utilization_pct"] = (
+        customers["outstanding"] /
+        customers["credit_limit"]
+    ) * 100
 
-elif module == "Sales":
-    st.header("Sales")
-    st.dataframe(sales)
+    result = customers[
+        customers["utilization_pct"] >= 80
+    ]
 
-elif module == "Purchase Orders":
-    st.header("Purchase Orders")
-    st.dataframe(po)
+    st.subheader("Customers Above 80% Credit Limit")
+    st.dataframe(result)
+
+# Question 2
+elif question == "Inventory Value":
+
+    inventory["inventory_value"] = (
+        inventory["quantity"] *
+        inventory["unit_price"]
+    )
+
+    total_value = inventory["inventory_value"].sum()
+
+    st.metric(
+        "Total Inventory Value",
+        f"₹{total_value:,.0f}"
+    )
+
+# Question 3
+elif question == "Top 10 Customers by Sales":
+
+    sales_summary = (
+        sales.groupby("customer_id")["amount"]
+        .sum()
+        .reset_index()
+        .sort_values("amount", ascending=False)
+        .head(10)
+    )
+
+    st.subheader("Top 10 Customers")
+    st.dataframe(sales_summary)
+
+# Question 4
+elif question == "Open Purchase Orders":
+
+    open_po = po[po["status"] == "Open"]
+
+    st.subheader("Open Purchase Orders")
+    st.dataframe(open_po)
