@@ -1,109 +1,227 @@
 import streamlit as st
 import pandas as pd
 import google.generativeai as genai
+import json
+import re
 
 st.set_page_config(page_title="AI Agent Hub", layout="wide")
 
 st.title("AI Agent Hub")
 
-# Load Data
+# -----------------------------
+# LOAD DATA
+# -----------------------------
+
 customers = pd.read_csv("customers.csv")
 inventory = pd.read_csv("inventory.csv")
 sales = pd.read_csv("sales.csv")
 po = pd.read_csv("po.csv")
 
-# Gemini Setup
+# -----------------------------
+# GEMINI SETUP
+# -----------------------------
+
 genai.configure(
     api_key=st.secrets["GEMINI_API_KEY"]
 )
 
 model = genai.GenerativeModel("gemini-2.5-flash")
 
-
-# -------------------------------
+# -----------------------------
 # TOOLS
-# -------------------------------
+# -----------------------------
 
-def customer_tool(customers_df):
-    customers_df = customers_df.copy()
+def customer_tool(df, action, params):
 
-    customers_df["utilization_pct"] = (
-        customers_df["outstanding"]
-        / customers_df["credit_limit"]
+    df = df.copy()
+
+    df["utilization_pct"] = (
+        df["outstanding"] /
+        df["credit_limit"]
     ) * 100
 
-    return customers_df
+    if action == "high_credit_utilization":
+
+        threshold = params.get("threshold", 80)
+
+        return df[
+            df["utilization_pct"] >= threshold
+        ].sort_values(
+            "utilization_pct",
+            ascending=False
+        )
+
+    elif action == "top_outstanding":
+
+        limit = params.get("limit", 10)
+
+        return df.sort_values(
+            "outstanding",
+            ascending=False
+        ).head(limit)
+
+    elif action == "customer_count":
+
+        return len(df)
+
+    return df
 
 
-def inventory_tool(inventory_df):
-    inventory_df = inventory_df.copy()
+def sales_tool(df, action, params):
 
-    inventory_df["inventory_value"] = (
-        inventory_df["quantity"]
-        * inventory_df["unit_price"]
+    if action == "top_customers":
+
+        limit = params.get("limit", 10)
+
+        result = (
+            df.groupby("customer_id")["amount"]
+            .sum()
+            .reset_index()
+            .sort_values("amount", ascending=False)
+            .head(limit)
+        )
+
+        return result
+
+    elif action == "total_sales":
+
+        return df["amount"].sum()
+
+    return df
+
+
+def inventory_tool(df, action, params):
+
+    df = df.copy()
+
+    df["inventory_value"] = (
+        df["quantity"] *
+        df["unit_price"]
     )
 
-    return inventory_df
+    if action == "inventory_value":
+
+        return df["inventory_value"].sum()
+
+    elif action == "low_stock":
+
+        threshold = params.get("threshold", 10)
+
+        return df[
+            df["quantity"] <= threshold
+        ]
+
+    return df
 
 
-def sales_tool(sales_df):
-    return sales_df
+def po_tool(df, action, params):
+
+    if action == "open_pos":
+
+        return df[
+            df["status"].str.lower() == "open"
+        ]
+
+    elif action == "delayed_pos":
+
+        return df[
+            df["status"].str.lower() == "delayed"
+        ]
+
+    return df
 
 
-def po_tool(po_df):
-    return po_df
+# -----------------------------
+# AGENT PLANNER
+# -----------------------------
 
-
-# -------------------------------
-# GEMINI TOOL SELECTOR
-# -------------------------------
-
-def select_tool(user_query):
+def get_agent_decision(user_query):
 
     prompt = f"""
-    You are an ERP AI Agent.
+You are an ERP AI Agent.
 
-    Available tools:
+Return ONLY valid JSON.
 
-    customer_tool
-    - customer information
-    - credit limits
-    - outstanding balances
+Available Tools:
 
-    inventory_tool
-    - inventory
-    - stock
-    - inventory value
+customer_tool
+Actions:
+- high_credit_utilization
+- top_outstanding
+- customer_count
 
-    sales_tool
-    - revenue
-    - customers
-    - sales transactions
+sales_tool
+Actions:
+- top_customers
+- total_sales
 
-    po_tool
-    - purchase orders
-    - suppliers
-    - procurement
+inventory_tool
+Actions:
+- inventory_value
+- low_stock
 
-    User Question:
-    {user_query}
+po_tool
+Actions:
+- open_pos
+- delayed_pos
 
-    Return ONLY ONE of these:
+Examples:
 
-    customer_tool
-    inventory_tool
-    sales_tool
-    po_tool
-    """
+User:
+Show risky customers
+
+Output:
+{{
+"tool":"customer_tool",
+"action":"high_credit_utilization",
+"parameters": {{
+"threshold":80
+}}
+}}
+
+User:
+Show customers above 70% credit utilization
+
+Output:
+{{
+"tool":"customer_tool",
+"action":"high_credit_utilization",
+"parameters": {{
+"threshold":70
+}}
+}}
+
+User:
+Show top 5 customers by sales
+
+Output:
+{{
+"tool":"sales_tool",
+"action":"top_customers",
+"parameters": {{
+"limit":5
+}}
+}}
+
+User:
+{user_query}
+
+Return JSON only.
+"""
 
     response = model.generate_content(prompt)
 
-    return response.text.strip()
+    text = response.text.strip()
+
+    text = re.sub(r"```json", "", text)
+    text = re.sub(r"```", "", text)
+
+    return json.loads(text)
 
 
-# -------------------------------
+# -----------------------------
 # UI
-# -------------------------------
+# -----------------------------
 
 st.header("Business Insights")
 
@@ -113,71 +231,89 @@ user_query = st.text_input(
 
 if user_query:
 
-    tool = select_tool(user_query)
+    try:
 
-    st.success(f"Selected Tool: {tool}")
+        decision = get_agent_decision(user_query)
 
-    # CUSTOMER TOOL
+        st.subheader("Agent Decision")
 
-    if tool == "customer_tool":
+        st.json(decision)
 
-        result = customer_tool(customers)
+        tool = decision["tool"]
+        action = decision["action"]
+        params = decision.get("parameters", {})
 
-        st.subheader("Customer Data")
-        st.dataframe(result)
+        # CUSTOMER
 
-    # INVENTORY TOOL
+        if tool == "customer_tool":
 
-    elif tool == "inventory_tool":
+            result = customer_tool(
+                customers,
+                action,
+                params
+            )
 
-        result = inventory_tool(inventory)
+            st.subheader("Customer Results")
 
-        st.subheader("Inventory Data")
-        st.dataframe(result)
+            if isinstance(result, pd.DataFrame):
+                st.dataframe(result)
+            else:
+                st.write(result)
 
-        total_value = result["inventory_value"].sum()
+        # SALES
 
-        st.metric(
-            "Total Inventory Value",
-            f"₹{total_value:,.0f}"
-        )
+        elif tool == "sales_tool":
 
-    # SALES TOOL
+            result = sales_tool(
+                sales,
+                action,
+                params
+            )
 
-    elif tool == "sales_tool":
+            st.subheader("Sales Results")
 
-        result = sales_tool(sales)
+            if isinstance(result, pd.DataFrame):
+                st.dataframe(result)
+            else:
+                st.metric(
+                    "Total Sales",
+                    f"₹{result:,.0f}"
+                )
 
-        st.subheader("Sales Data")
-        st.dataframe(result)
+        # INVENTORY
 
-        sales_summary = (
-            result.groupby("customer_id")["amount"]
-            .sum()
-            .reset_index()
-            .sort_values("amount", ascending=False)
-            .head(10)
-        )
+        elif tool == "inventory_tool":
 
-        st.subheader("Top Customers by Sales")
-        st.dataframe(sales_summary)
+            result = inventory_tool(
+                inventory,
+                action,
+                params
+            )
 
-    # PURCHASE ORDER TOOL
+            st.subheader("Inventory Results")
 
-    elif tool == "po_tool":
+            if isinstance(result, pd.DataFrame):
+                st.dataframe(result)
+            else:
+                st.metric(
+                    "Inventory Value",
+                    f"₹{result:,.0f}"
+                )
 
-        result = po_tool(po)
+        # PO
 
-        st.subheader("Purchase Orders")
+        elif tool == "po_tool":
 
-        open_po = result[
-            result["status"].str.lower() == "open"
-        ]
+            result = po_tool(
+                po,
+                action,
+                params
+            )
 
-        st.dataframe(open_po)
+            st.subheader("Purchase Order Results")
 
-    else:
+            st.dataframe(result)
 
-        st.warning(
-            "No suitable tool found."
-        )
+    except Exception as e:
+
+        st.error(f"Error: {e}")
