@@ -234,7 +234,7 @@ if user_query:
 
         st.json(decision)
 
-       tool = decision["tool"]
+        tool = decision["tool"]
 
         params = {
             "metric": decision.get("metric"),
