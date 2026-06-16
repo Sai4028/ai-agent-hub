@@ -144,26 +144,25 @@ Return ONLY valid JSON.
 
 Available Tools:
 
+Available Tools:
+
 customer_tool
-Actions:
-- high_credit_utilization
-- top_outstanding
-- customer_count
+Metrics:
+- outstanding
+- utilization_pct
 
 sales_tool
-Actions:
-- top_customers
-- total_sales
+Metrics:
+- amount
 
 inventory_tool
-Actions:
+Metrics:
 - inventory_value
-- low_stock
+- quantity
 
 po_tool
-Actions:
-- open_pos
-- delayed_pos
+Metrics:
+- amount
 
 Examples:
 
@@ -195,13 +194,25 @@ User:
 Show top 5 customers by sales
 
 Output:
-{{
+{
 "tool":"sales_tool",
-"action":"top_customers",
-"parameters": {{
-"limit":5
-}}
-}}
+"metric":"amount",
+"sort":"desc",
+"limit":5,
+"presentation":"table"
+}
+
+User:
+Bottom 5 customers by sales
+
+Output:
+{
+"tool":"sales_tool",
+"metric":"amount",
+"sort":"asc",
+"limit":5,
+"presentation":"table"
+}
 
 User:
 {user_query}
@@ -234,6 +245,9 @@ if user_query:
     try:
 
         decision = get_agent_decision(user_query)
+
+        st.json(decision)
+        st.stop()
 
         st.subheader("Agent Decision")
 
