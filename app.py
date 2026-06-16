@@ -182,6 +182,40 @@ def kpi_tool(params):
         }
     ])
 
+def risk_sales_tool(params):
+
+    customer_df = customers.copy()
+
+    customer_df["utilization_pct"] = (
+        customer_df["outstanding"]
+        /
+        customer_df["credit_limit"]
+    ) * 100
+
+    sales_summary = (
+        sales.groupby("customer_id")["amount"]
+        .sum()
+        .reset_index()
+    )
+
+    result = customer_df.merge(
+        sales_summary,
+        on="customer_id",
+        how="left"
+    )
+
+    avg_sales = result["amount"].mean()
+
+    result = result[
+        (result["utilization_pct"] >= 80)
+        &
+        (result["amount"] <= avg_sales)
+    ]
+
+    return result.sort_values(
+        "utilization_pct",
+        ascending=False
+    )
 
 def render_result(result, params):
 
@@ -275,6 +309,10 @@ TOOLS = {
     "kpi_tool": {
     "function": kpi_tool,
     "description": "Business KPI dashboard across all datasets"
+    },
+    "risk_sales_tool": {
+    "function": risk_sales_tool,
+    "description": "Identify customers with high credit utilization and low sales"
 }
 }
 
@@ -283,7 +321,8 @@ DATASETS = {
     "sales_tool": sales,
     "inventory_tool": inventory,
     "po_tool": po,
-    "kpi_tool": None
+    "kpi_tool": None,
+    "risk_sales_tool": None
 }
 
 def get_available_tools():
@@ -501,6 +540,26 @@ Output:
 "tool":"kpi_tool",
 "presentation":"table"
 }}
+
+User:
+Show customers with high utilization but low sales
+
+Output:
+{{
+"tool":"risk_sales_tool",
+"presentation":"table"
+}}
+
+User:
+Show risky low revenue customers
+
+Output:
+{{
+"tool":"risk_sales_tool",
+"presentation":"table"
+}}
+
+
 User:
 {user_query}
 
@@ -599,6 +658,28 @@ if user_query:
                 result,
                 params
             )
+
+        # RISK 
+        
+        elif tool == "risk_sales_tool":
+    
+        result = risk_sales_tool(params)
+    
+        log_query(
+            user_query,
+            tool,
+            decision,
+            result
+        )
+    
+        st.subheader(
+            "Risk vs Sales Analysis"
+        )
+    
+        render_result(
+            result,
+            params
+        )
 
         # CUSTOMER
 
