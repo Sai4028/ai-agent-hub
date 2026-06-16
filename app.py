@@ -220,6 +220,12 @@ def log_query(
             index=False
         )
 
+TOOLS = {
+    "customer_tool": customer_tool,
+    "sales_tool": sales_tool,
+    "inventory_tool": inventory_tool,
+    "po_tool": po_tool
+}
 
 # -----------------------------
 # AGENT PLANNER
@@ -434,6 +440,14 @@ Return JSON only.
 st.header("Business Insights")
 
 st.sidebar.header("Query History")
+
+st.sidebar.subheader("Registered Tools")
+
+for tool_name in TOOLS.keys():
+
+    st.sidebar.write(
+        "🔧 " + tool_name
+    )
 
 if os.path.exists("audit_log.csv"):
 
