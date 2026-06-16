@@ -3,6 +3,8 @@ import pandas as pd
 import google.generativeai as genai
 import json
 import re
+from datetime import datetime
+import os
 
 st.set_page_config(page_title="AI Agent Hub", layout="wide")
 
@@ -176,6 +178,48 @@ def render_result(result, params):
     else:
 
         st.dataframe(result)
+def log_query(
+    user_query,
+    tool,
+    decision,
+    result
+):
+
+    rows_returned = 0
+
+    if isinstance(result, pd.DataFrame):
+        rows_returned = len(result)
+
+    log_entry = pd.DataFrame([{
+        "timestamp": datetime.now(),
+        "query": user_query,
+        "tool": tool,
+        "decision": json.dumps(
+            decision,
+            ensure_ascii=False
+        ),
+        "rows_returned": rows_returned,
+        "status": "success"
+    }])
+
+    file_name = "audit_log.csv"
+
+    if os.path.exists(file_name):
+
+        log_entry.to_csv(
+            file_name,
+            mode="a",
+            header=False,
+            index=False
+        )
+
+    else:
+
+        log_entry.to_csv(
+            file_name,
+            index=False
+        )
+
 
 # -----------------------------
 # AGENT PLANNER
@@ -421,6 +465,13 @@ if user_query:
                 params
             )
 
+            log_query(
+                user_query,
+                tool,
+                decision,
+                result
+            )
+
             st.subheader("Customer Results")
 
             if isinstance(result, pd.DataFrame):
@@ -438,6 +489,13 @@ if user_query:
             result = sales_tool(
                 sales,
                 params
+            )
+
+            log_query(
+                user_query,
+                tool,
+                decision,
+                result
             )
         
             st.subheader("Sales Results")
@@ -469,6 +527,13 @@ if user_query:
                 params
             )
 
+            log_query(
+                user_query,
+                tool,
+                decision,
+                result
+            )
+
             st.subheader("Inventory Results")
 
             if isinstance(result, pd.DataFrame):
@@ -496,6 +561,13 @@ if user_query:
             render_result(
                 result,
                 params
+            )
+
+            log_query(
+                user_query,
+                tool,
+                decision,
+                result
             )
     except Exception as e:
 
