@@ -221,10 +221,25 @@ def log_query(
         )
 
 TOOLS = {
-    "customer_tool": customer_tool,
-    "sales_tool": sales_tool,
-    "inventory_tool": inventory_tool,
-    "po_tool": po_tool
+    "customer_tool": {
+        "function": customer_tool,
+        "description": "Customer analytics and credit utilization insights"
+    },
+
+    "sales_tool": {
+        "function": sales_tool,
+        "description": "Sales analytics and customer sales performance"
+    },
+
+    "inventory_tool": {
+        "function": inventory_tool,
+        "description": "Inventory valuation and stock monitoring"
+    },
+
+    "po_tool": {
+        "function": po_tool,
+        "description": "Purchase order analytics and status tracking"
+    }
 }
 
 # -----------------------------
@@ -443,12 +458,15 @@ st.sidebar.header("Query History")
 
 st.sidebar.subheader("Registered Tools")
 
-for tool_name in TOOLS.keys():
+for tool_name, tool_info in TOOLS.items():
 
     st.sidebar.write(
         "🔧 " + tool_name
     )
 
+    st.sidebar.caption(
+        tool_info["description"]
+    )
 if os.path.exists("audit_log.csv"):
 
     history_df = pd.read_csv(
