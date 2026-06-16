@@ -397,7 +397,10 @@ if user_query:
             st.subheader("Customer Results")
 
             if isinstance(result, pd.DataFrame):
-                st.dataframe(result)
+                render_result(
+                    result,
+                    params
+                )
             else:
                 st.write(result)
 
@@ -425,7 +428,10 @@ if user_query:
             
             else:
             
-                st.dataframe(result)
+                render_result(
+                    result,
+                    params
+                )
         
         # INVENTORY
 
@@ -439,7 +445,10 @@ if user_query:
             st.subheader("Inventory Results")
 
             if isinstance(result, pd.DataFrame):
-                st.dataframe(result)
+                render_result(
+                    result,
+                    params
+                )
             else:
                 st.metric(
                     "Inventory Value",
@@ -457,8 +466,37 @@ if user_query:
 
             st.subheader("Purchase Order Results")
 
-            st.dataframe(result)
-
+            render_result(
+                result,
+                params
+            )
     except Exception as e:
 
         st.error(f"Error: {e}")
+        
+  def render_result(result, params):
+
+    presentation = params.get(
+        "presentation",
+        "table"
+    )
+    
+    if presentation == "bar_chart":
+    
+        numeric_cols = result.select_dtypes(
+            include=["number"]
+        ).columns
+    
+        if len(numeric_cols) > 0:
+    
+            metric_col = numeric_cols[-1]
+    
+            index_col = result.columns[0]
+    
+            st.bar_chart(
+                result.set_index(index_col)[metric_col]
+            )
+    
+    else:
+    
+        st.dataframe(result)
