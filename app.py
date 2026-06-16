@@ -475,7 +475,32 @@ Output:
 "presentation":"table"
 }}
 
+User:
+Show business KPI dashboard
 
+Output:
+{
+"tool":"kpi_tool",
+"presentation":"table"
+}
+
+User:
+Show business health summary
+
+Output:
+{
+"tool":"kpi_tool",
+"presentation":"table"
+}
+
+User:
+Show company KPIs
+
+Output:
+{
+"tool":"kpi_tool",
+"presentation":"table"
+}
 User:
 {user_query}
 
