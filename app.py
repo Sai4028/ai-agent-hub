@@ -282,8 +282,8 @@ DATASETS = {
     "customer_tool": customers,
     "sales_tool": sales,
     "inventory_tool": inventory,
-    "po_tool": po
-    "kpi_tool": None,
+    "po_tool": po,
+    "kpi_tool": None
 }
 
 def get_available_tools():
