@@ -152,6 +152,37 @@ def po_tool(df, params):
             ascending=ascending
         ).head(limit)
 
+def kpi_tool(params):
+
+    total_sales = sales["amount"].sum()
+
+    inventory_value = (
+        inventory["quantity"] *
+        inventory["unit_price"]
+    ).sum()
+
+    open_pos = len(
+        po[
+            po["status"].str.lower() == "open"
+        ]
+    )
+
+    return pd.DataFrame([
+        {
+            "KPI": "Total Sales",
+            "Value": total_sales
+        },
+        {
+            "KPI": "Inventory Value",
+            "Value": inventory_value
+        },
+        {
+            "KPI": "Open Purchase Orders",
+            "Value": open_pos
+        }
+    ])
+
+
 def render_result(result, params):
 
     presentation = params.get(
@@ -239,7 +270,12 @@ TOOLS = {
     "po_tool": {
         "function": po_tool,
         "description": "Purchase order analytics and status tracking"
-    }
+    },
+
+    "kpi_tool": {
+    "function": kpi_tool,
+    "description": "Business KPI dashboard across all datasets"
+}
 }
 
 DATASETS = {
@@ -247,6 +283,7 @@ DATASETS = {
     "sales_tool": sales,
     "inventory_tool": inventory,
     "po_tool": po
+    "kpi_tool": None,
 }
 
 def get_available_tools():
