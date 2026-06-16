@@ -565,7 +565,7 @@ if user_query:
     try:
 
         decision = get_agent_decision(user_query)
-        
+
         st.subheader("Agent Decision")
 
         st.json(decision)
@@ -579,150 +579,151 @@ if user_query:
             "threshold": decision.get("threshold"),
             "presentation": decision.get("presentation", "table")
         }
-# KPI
 
-if tool == "kpi_tool":
+        # KPI
 
-    result = kpi_tool(params)
+        if tool == "kpi_tool":
 
-    log_query(
-        user_query,
-        tool,
-        decision,
-        result
-    )
+            result = kpi_tool(params)
 
-    st.subheader("Business KPIs")
+            log_query(
+                user_query,
+                tool,
+                decision,
+                result
+            )
 
-    render_result(
-        result,
-        params
-    )
+            st.subheader("Business KPIs")
 
-# CUSTOMER
+            render_result(
+                result,
+                params
+            )
 
-elif tool == "customer_tool":
+        # CUSTOMER
 
-    tool_function = TOOLS[tool]["function"]
+        elif tool == "customer_tool":
 
-    tool_data = DATASETS[tool]
+            tool_function = TOOLS[tool]["function"]
 
-    result = tool_function(
-        tool_data,
-        params
-    )
+            tool_data = DATASETS[tool]
 
-    log_query(
-        user_query,
-        tool,
-        decision,
-        result
-    )
+            result = tool_function(
+                tool_data,
+                params
+            )
 
-    st.subheader("Customer Results")
+            log_query(
+                user_query,
+                tool,
+                decision,
+                result
+            )
 
-    render_result(
-        result,
-        params
-    )
+            st.subheader("Customer Results")
 
-# SALES
+            render_result(
+                result,
+                params
+            )
 
-elif tool == "sales_tool":
+        # SALES
 
-    tool_function = TOOLS[tool]["function"]
+        elif tool == "sales_tool":
 
-    tool_data = DATASETS[tool]
+            tool_function = TOOLS[tool]["function"]
 
-    result = tool_function(
-        tool_data,
-        params
-    )
+            tool_data = DATASETS[tool]
 
-    log_query(
-        user_query,
-        tool,
-        decision,
-        result
-    )
+            result = tool_function(
+                tool_data,
+                params
+            )
 
-    st.subheader("Sales Results")
+            log_query(
+                user_query,
+                tool,
+                decision,
+                result
+            )
 
-    presentation = params.get(
-        "presentation",
-        "table"
-    )
+            st.subheader("Sales Results")
 
-    if presentation == "bar_chart":
+            presentation = params.get(
+                "presentation",
+                "table"
+            )
 
-        st.bar_chart(
-            result.set_index("customer_id")["amount"]
-        )
+            if presentation == "bar_chart":
 
-    else:
+                st.bar_chart(
+                    result.set_index("customer_id")["amount"]
+                )
 
-        render_result(
-            result,
-            params
-        )
+            else:
 
-# INVENTORY
+                render_result(
+                    result,
+                    params
+                )
 
-elif tool == "inventory_tool":
+        # INVENTORY
 
-    tool_function = TOOLS[tool]["function"]
+        elif tool == "inventory_tool":
 
-    tool_data = DATASETS[tool]
+            tool_function = TOOLS[tool]["function"]
 
-    result = tool_function(
-        tool_data,
-        params
-    )
+            tool_data = DATASETS[tool]
 
-    log_query(
-        user_query,
-        tool,
-        decision,
-        result
-    )
+            result = tool_function(
+                tool_data,
+                params
+            )
 
-    st.subheader("Inventory Results")
+            log_query(
+                user_query,
+                tool,
+                decision,
+                result
+            )
 
-    render_result(
-        result,
-        params
-    )
+            st.subheader("Inventory Results")
 
-# PO
+            render_result(
+                result,
+                params
+            )
 
-elif tool == "po_tool":
+        # PO
 
-    tool_function = TOOLS[tool]["function"]
+        elif tool == "po_tool":
 
-    tool_data = DATASETS[tool]
+            tool_function = TOOLS[tool]["function"]
 
-    result = tool_function(
-        tool_data,
-        params
-    )
+            tool_data = DATASETS[tool]
 
-    log_query(
-        user_query,
-        tool,
-        decision,
-        result
-    )
+            result = tool_function(
+                tool_data,
+                params
+            )
 
-    st.subheader("Purchase Order Results")
+            log_query(
+                user_query,
+                tool,
+                decision,
+                result
+            )
 
-    render_result(
-        result,
-        params
-    )
+            st.subheader("Purchase Order Results")
+
+            render_result(
+                result,
+                params
+            )
+
     except Exception as e:
 
-        st.error(f"Error: {e}")
-   
+        st.error(f"Error: {e}")   
 with st.expander("Agent Audit Log"):
 
     if os.path.exists("audit_log.csv"):
