@@ -20,27 +20,90 @@ genai.configure(
 model = genai.GenerativeModel("gemini-2.5-flash")
 
 
-def classify_query(user_query):
+# -------------------------------
+# TOOLS
+# -------------------------------
+
+def customer_tool(customers_df):
+    customers_df = customers_df.copy()
+
+    customers_df["utilization_pct"] = (
+        customers_df["outstanding"]
+        / customers_df["credit_limit"]
+    ) * 100
+
+    return customers_df
+
+
+def inventory_tool(inventory_df):
+    inventory_df = inventory_df.copy()
+
+    inventory_df["inventory_value"] = (
+        inventory_df["quantity"]
+        * inventory_df["unit_price"]
+    )
+
+    return inventory_df
+
+
+def sales_tool(sales_df):
+    return sales_df
+
+
+def po_tool(po_df):
+    return po_df
+
+
+# -------------------------------
+# GEMINI TOOL SELECTOR
+# -------------------------------
+
+def select_tool(user_query):
 
     prompt = f"""
-    Classify this business query into ONLY one category.
+    You are an ERP AI Agent.
 
-    Categories:
-    customer
-    inventory
-    sales
-    purchase_order
+    Available tools:
 
-    Query:
+    customer_tool
+    - customer information
+    - credit limits
+    - outstanding balances
+
+    inventory_tool
+    - inventory
+    - stock
+    - inventory value
+
+    sales_tool
+    - revenue
+    - customers
+    - sales transactions
+
+    po_tool
+    - purchase orders
+    - suppliers
+    - procurement
+
+    User Question:
     {user_query}
 
-    Return only the category name.
+    Return ONLY ONE of these:
+
+    customer_tool
+    inventory_tool
+    sales_tool
+    po_tool
     """
 
     response = model.generate_content(prompt)
 
-    return response.text.strip().lower()
+    return response.text.strip()
 
+
+# -------------------------------
+# UI
+# -------------------------------
 
 st.header("Business Insights")
 
@@ -50,45 +113,46 @@ user_query = st.text_input(
 
 if user_query:
 
-    intent = classify_query(user_query)
+    tool = select_tool(user_query)
 
-    st.success(f"Detected Intent: {intent}")
+    st.success(f"Selected Tool: {tool}")
 
-    # Customer Analysis
-    if intent == "customer":
+    # CUSTOMER TOOL
 
-        customers["utilization_pct"] = (
-            customers["outstanding"] /
-            customers["credit_limit"]
-        ) * 100
+    if tool == "customer_tool":
 
-        result = customers[
-            customers["utilization_pct"] >= 80
-        ]
+        result = customer_tool(customers)
 
-        st.subheader("Customers Above 80% Credit Limit")
+        st.subheader("Customer Data")
         st.dataframe(result)
 
-    # Inventory Analysis
-    elif intent == "inventory":
+    # INVENTORY TOOL
 
-        inventory["inventory_value"] = (
-            inventory["quantity"] *
-            inventory["unit_price"]
-        )
+    elif tool == "inventory_tool":
 
-        total_value = inventory["inventory_value"].sum()
+        result = inventory_tool(inventory)
+
+        st.subheader("Inventory Data")
+        st.dataframe(result)
+
+        total_value = result["inventory_value"].sum()
 
         st.metric(
             "Total Inventory Value",
             f"₹{total_value:,.0f}"
         )
 
-    # Sales Analysis
-    elif intent == "sales":
+    # SALES TOOL
+
+    elif tool == "sales_tool":
+
+        result = sales_tool(sales)
+
+        st.subheader("Sales Data")
+        st.dataframe(result)
 
         sales_summary = (
-            sales.groupby("customer_id")["amount"]
+            result.groupby("customer_id")["amount"]
             .sum()
             .reset_index()
             .sort_values("amount", ascending=False)
@@ -98,18 +162,22 @@ if user_query:
         st.subheader("Top Customers by Sales")
         st.dataframe(sales_summary)
 
-    # Purchase Order Analysis
-    elif intent == "purchase_order":
+    # PURCHASE ORDER TOOL
 
-        open_po = po[
-            po["status"].str.lower() == "open"
+    elif tool == "po_tool":
+
+        result = po_tool(po)
+
+        st.subheader("Purchase Orders")
+
+        open_po = result[
+            result["status"].str.lower() == "open"
         ]
 
-        st.subheader("Open Purchase Orders")
         st.dataframe(open_po)
 
     else:
 
         st.warning(
-            "Unable to determine the correct business area."
+            "No suitable tool found."
         )
