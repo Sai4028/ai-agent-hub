@@ -491,7 +491,7 @@ Output:
 {{
 "tool":"kpi_tool",
 "presentation":"table"
-})
+}}
 
 User:
 Show company KPIs
