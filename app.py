@@ -521,10 +521,15 @@ if user_query:
 
         if tool == "customer_tool":
 
-            result = customer_tool(
-                customers,
+            tool_function = TOOLS[tool]["function"]
+        
+            tool_data = DATASETS[tool]
+        
+            result = tool_function(
+                tool_data,
                 params
             )
+
 
             log_query(
                 user_query,
@@ -587,10 +592,15 @@ if user_query:
 
         elif tool == "inventory_tool":
 
-            result = inventory_tool(
-                inventory,
+            tool_function = TOOLS[tool]["function"]
+        
+            tool_data = DATASETS[tool]
+        
+            result = tool_function(
+                tool_data,
                 params
             )
+
 
             log_query(
                 user_query,
@@ -616,8 +626,12 @@ if user_query:
 
         elif tool == "po_tool":
 
-            result = po_tool(
-                po,
+            tool_function = TOOLS[tool]["function"]
+        
+            tool_data = DATASETS[tool]
+        
+            result = tool_function(
+                tool_data,
                 params
             )
 
