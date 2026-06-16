@@ -247,8 +247,7 @@ if user_query:
         decision = get_agent_decision(user_query)
 
         st.json(decision)
-        st.stop()
-
+        
         st.subheader("Agent Decision")
 
         st.json(decision)
