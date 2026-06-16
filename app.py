@@ -82,7 +82,7 @@ def sales_tool(df, params):
 
     return result
 
-def inventory_tool(df, action, params):
+def inventory_tool(df, params):
 
     df = df.copy()
 
@@ -91,19 +91,23 @@ def inventory_tool(df, action, params):
         df["unit_price"]
     )
 
-    if action == "inventory_value":
+    metric = params.get("metric")
+    sort = params.get("sort", "desc")
+    limit = params.get("limit", 10)
+    threshold = params.get("threshold")
 
-        return df["inventory_value"].sum()
-
-    elif action == "low_stock":
-
-        threshold = params.get("threshold", 10)
+    if threshold is not None:
 
         return df[
-            df["quantity"] <= threshold
+            df[metric] <= threshold
         ]
 
-    return df
+    ascending = sort == "asc"
+
+    return df.sort_values(
+        metric,
+        ascending=ascending
+    ).head(limit)
 
 
 def po_tool(df, action, params):
@@ -218,6 +222,41 @@ Output:
 }}
 
 User:
+Top 5 inventory items by value
+
+Output:
+{{
+"tool":"inventory_tool",
+"metric":"inventory_value",
+"sort":"desc",
+"limit":5,
+"presentation":"table"
+}}
+
+User:
+Bottom 5 inventory items by value
+
+Output:
+{{
+"tool":"inventory_tool",
+"metric":"inventory_value",
+"sort":"asc",
+"limit":5,
+"presentation":"table"
+}}
+
+User:
+Show low stock items
+
+Output:
+{{
+"tool":"inventory_tool",
+"metric":"quantity",
+"threshold":10,
+"presentation":"table"
+}}
+
+User:
 {user_query}
 
 Return JSON only.
@@ -310,7 +349,6 @@ if user_query:
 
             result = inventory_tool(
                 inventory,
-                action,
                 params
             )
 
