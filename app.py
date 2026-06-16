@@ -242,11 +242,29 @@ TOOLS = {
     }
 }
 
+def get_available_tools():
+
+    tools_text = ""
+
+    for tool_name, tool_info in TOOLS.items():
+
+        tools_text += f"""
+
+{tool_name}
+Description:
+{tool_info['description']}
+
+"""
+
+    return tools_text
+
 # -----------------------------
 # AGENT PLANNER
 # -----------------------------
 
 def get_agent_decision(user_query):
+
+available_tools = get_available_tools()
 
     prompt = f"""
 You are an ERP AI Agent.
@@ -255,25 +273,7 @@ Return ONLY valid JSON.
 
 Available Tools:
 
-Available Tools:
-
-customer_tool
-Metrics:
-- outstanding
-- utilization_pct
-
-sales_tool
-Metrics:
-- amount
-
-inventory_tool
-Metrics:
-- inventory_value
-- quantity
-
-po_tool
-Metrics:
-- amount
+{available_tools}
 
 Examples:
 
