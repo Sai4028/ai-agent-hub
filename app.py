@@ -132,17 +132,23 @@ def po_tool(df, params):
     
         return filtered.head(limit)
     
+    filtered = df
+
+    if threshold:
+    
+        filtered = filtered[
+            filtered["status"].str.lower()
+            == str(threshold).lower()
+        ]
+
     if metric == "amount":
-
+    
         ascending = sort == "asc"
-
-        return df.sort_values(
+    
+        return filtered.sort_values(
             "amount",
             ascending=ascending
         ).head(limit)
-
-    return df
-
 
 # -----------------------------
 # AGENT PLANNER
