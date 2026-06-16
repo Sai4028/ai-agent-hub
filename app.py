@@ -121,15 +121,17 @@ def po_tool(df, params):
 
     if metric == "status":
 
+        filtered = df
+    
         if threshold:
-
-            return df[
+    
+            filtered = df[
                 df["status"].str.lower()
                 == str(threshold).lower()
             ]
-
-        return df
-
+    
+        return filtered.head(limit)
+    
     if metric == "amount":
 
         ascending = sort == "asc"
