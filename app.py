@@ -242,6 +242,13 @@ TOOLS = {
     }
 }
 
+DATASETS = {
+    "customer_tool": customers,
+    "sales_tool": sales,
+    "inventory_tool": inventory,
+    "po_tool": po
+}
+
 def get_available_tools():
 
     tools_text = ""
