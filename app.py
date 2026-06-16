@@ -572,3 +572,17 @@ if user_query:
     except Exception as e:
 
         st.error(f"Error: {e}")
+   
+    st.divider()
+    
+    st.subheader("Audit Log")
+    
+    if os.path.exists("audit_log.csv"):
+    
+        audit_df = pd.read_csv(
+            "audit_log.csv"
+        )
+    
+        st.dataframe(
+            audit_df.tail(20)
+        )
