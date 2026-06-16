@@ -31,7 +31,7 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 # TOOLS
 # -----------------------------
 
-def customer_tool(df, action, params):
+def customer_tool(df, params):
 
     df = df.copy()
 
@@ -40,32 +40,26 @@ def customer_tool(df, action, params):
         df["credit_limit"]
     ) * 100
 
-    if action == "high_credit_utilization":
+    metric = params.get("metric")
+    sort = params.get("sort", "desc")
+    limit = params.get("limit", 10)
+    threshold = params.get("threshold")
 
-        threshold = params.get("threshold", 80)
+    if threshold is not None:
 
         return df[
-            df["utilization_pct"] >= threshold
+            df[metric] >= threshold
         ].sort_values(
-            "utilization_pct",
+            metric,
             ascending=False
         )
 
-    elif action == "top_outstanding":
+    ascending = sort == "asc"
 
-        limit = params.get("limit", 10)
-
-        return df.sort_values(
-            "outstanding",
-            ascending=False
-        ).head(limit)
-
-    elif action == "customer_count":
-
-        return len(df)
-
-    return df
-
+    return df.sort_values(
+        metric,
+        ascending=ascending
+    ).head(limit)
 
 def sales_tool(df, params):
 
@@ -165,14 +159,39 @@ Metrics:
 Examples:
 
 User:
-Show risky customers
+Top 5 outstanding customers
 
 Output:
+{{
+"tool":"customer_tool",
+"metric":"outstanding",
+"sort":"desc",
+"limit":5,
+"presentation":"table"
+}}
 
 User:
-Show customers above 70% credit utilization
+Bottom 5 outstanding customers
 
 Output:
+{{
+"tool":"customer_tool",
+"metric":"outstanding",
+"sort":"asc",
+"limit":5,
+"presentation":"table"
+}}
+
+User:
+Customers above 80% utilization
+
+Output:
+{{
+"tool":"customer_tool",
+"metric":"utilization_pct",
+"threshold":80,
+"presentation":"table"
+}}
 
 User:
 Show top 5 customers by sales
@@ -249,7 +268,6 @@ if user_query:
 
             result = customer_tool(
                 customers,
-                action,
                 params
             )
 
