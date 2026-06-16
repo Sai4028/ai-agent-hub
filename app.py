@@ -8,7 +8,9 @@ import os
 
 st.set_page_config(page_title="AI Agent Hub", layout="wide")
 
-st.title("AI Agent Hub")
+st.title("AI Business Intelligence Agent")
+
+st.subtitle("Natural Language analytics with agentic workflows")
 
 # -----------------------------
 # LOAD DATA
