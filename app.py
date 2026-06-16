@@ -264,7 +264,7 @@ Description:
 
 def get_agent_decision(user_query):
 
-available_tools = get_available_tools()
+    available_tools = get_available_tools()
 
     prompt = f"""
 You are an ERP AI Agent.
