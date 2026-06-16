@@ -433,6 +433,28 @@ Return JSON only.
 
 st.header("Business Insights")
 
+st.sidebar.header("Query History")
+
+if os.path.exists("audit_log.csv"):
+
+    history_df = pd.read_csv(
+        "audit_log.csv"
+    )
+
+    recent_history = history_df.tail(10)
+
+    for _, row in recent_history[::-1].iterrows():
+
+        st.sidebar.caption(
+            row["tool"]
+        )
+
+        st.sidebar.write(
+            row["query"]
+        )
+
+        st.sidebar.divider()
+
 user_query = st.text_input(
     "Ask a business question"
 )
