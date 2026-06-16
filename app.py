@@ -547,8 +547,12 @@ if user_query:
 
         elif tool == "sales_tool":
         
-            result = sales_tool(
-                sales,
+            tool_function = TOOLS[tool]["function"]
+        
+            tool_data = DATASETS[tool]
+        
+            result = tool_function(
+                tool_data,
                 params
             )
 
