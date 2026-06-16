@@ -245,6 +245,32 @@ Output:
 }}
 
 User:
+Show top 5 customers sales chart
+
+Output:
+{{
+"tool":"sales_tool",
+"metric":"amount",
+"sort":"desc",
+"limit":5,
+"presentation":"bar_chart"
+}}
+
+User:
+Show customer sales chart
+
+Output:
+{{
+"tool":"sales_tool",
+"metric":"amount",
+"sort":"desc",
+"limit":10,
+"presentation":"bar_chart"
+}}
+
+
+
+User:
 Top 5 inventory items by value
 
 Output:
@@ -390,15 +416,15 @@ if user_query:
                 "presentation",
                 "table"
             )
-        
+            
             if presentation == "bar_chart":
-        
+            
                 st.bar_chart(
-                    result.set_index("customer_id")
+                    result.set_index("customer_id")["amount"]
                 )
-        
+            
             else:
-        
+            
                 st.dataframe(result)
         
         # INVENTORY
