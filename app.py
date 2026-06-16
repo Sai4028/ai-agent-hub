@@ -110,19 +110,34 @@ def inventory_tool(df, params):
     ).head(limit)
 
 
-def po_tool(df, action, params):
+def po_tool(df, params):
 
-    if action == "open_pos":
+    df = df.copy()
 
-        return df[
-            df["status"].str.lower() == "open"
-        ]
+    metric = params.get("metric")
+    sort = params.get("sort", "desc")
+    limit = params.get("limit", 10)
+    threshold = params.get("threshold")
 
-    elif action == "delayed_pos":
+    if metric == "status":
 
-        return df[
-            df["status"].str.lower() == "delayed"
-        ]
+        if threshold:
+
+            return df[
+                df["status"].str.lower()
+                == str(threshold).lower()
+            ]
+
+        return df
+
+    if metric == "amount":
+
+        ascending = sort == "asc"
+
+        return df.sort_values(
+            "amount",
+            ascending=ascending
+        ).head(limit)
 
     return df
 
@@ -257,6 +272,41 @@ Output:
 }}
 
 User:
+Show open purchase orders
+
+Output:
+{{
+"tool":"po_tool",
+"metric":"status",
+"threshold":"open",
+"presentation":"table"
+}}
+
+User:
+Show delayed purchase orders
+
+Output:
+{{
+"tool":"po_tool",
+"metric":"status",
+"threshold":"delayed",
+"presentation":"table"
+}}
+
+User:
+Top 5 purchase orders by value
+
+Output:
+{{
+"tool":"po_tool",
+"metric":"amount",
+"sort":"desc",
+"limit":5,
+"presentation":"table"
+}}
+
+
+User:
 {user_query}
 
 Return JSON only.
@@ -368,7 +418,6 @@ if user_query:
 
             result = po_tool(
                 po,
-                action,
                 params
             )
 
