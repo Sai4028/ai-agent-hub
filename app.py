@@ -194,25 +194,25 @@ User:
 Show top 5 customers by sales
 
 Output:
-{
+{{
 "tool":"sales_tool",
 "metric":"amount",
 "sort":"desc",
 "limit":5,
 "presentation":"table"
-}
+}}
 
 User:
 Bottom 5 customers by sales
 
 Output:
-{
+{{
 "tool":"sales_tool",
 "metric":"amount",
 "sort":"asc",
 "limit":5,
 "presentation":"table"
-}
+}}
 
 User:
 {user_query}
