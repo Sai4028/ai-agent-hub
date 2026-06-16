@@ -586,8 +586,6 @@ Return JSON only.
 # UI
 # -----------------------------
 
-st.header("Business Insights")
-
 st.sidebar.header("Query History")
 
 st.sidebar.subheader("Registered Tools")
