@@ -150,6 +150,33 @@ def po_tool(df, params):
             ascending=ascending
         ).head(limit)
 
+def render_result(result, params):
+
+    presentation = params.get(
+        "presentation",
+        "table"
+    )
+
+    if presentation == "bar_chart":
+
+        numeric_cols = result.select_dtypes(
+            include=["number"]
+        ).columns
+
+        if len(numeric_cols) > 0:
+
+            metric_col = numeric_cols[-1]
+
+            index_col = result.columns[0]
+
+            st.bar_chart(
+                result.set_index(index_col)[metric_col]
+            )
+
+    else:
+
+        st.dataframe(result)
+
 # -----------------------------
 # AGENT PLANNER
 # -----------------------------
@@ -473,30 +500,3 @@ if user_query:
     except Exception as e:
 
         st.error(f"Error: {e}")
-        
-  def render_result(result, params):
-
-    presentation = params.get(
-        "presentation",
-        "table"
-    )
-    
-    if presentation == "bar_chart":
-    
-        numeric_cols = result.select_dtypes(
-            include=["number"]
-        ).columns
-    
-        if len(numeric_cols) > 0:
-    
-            metric_col = numeric_cols[-1]
-    
-            index_col = result.columns[0]
-    
-            st.bar_chart(
-                result.set_index(index_col)[metric_col]
-            )
-    
-    else:
-    
-        st.dataframe(result)
