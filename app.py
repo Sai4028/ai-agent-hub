@@ -12,19 +12,50 @@ inventory = pd.read_csv("inventory.csv")
 sales = pd.read_csv("sales.csv")
 po = pd.read_csv("po.csv")
 
+# Gemini Setup
+genai.configure(
+    api_key=st.secrets["GEMINI_API_KEY"]
+)
+
+model = genai.GenerativeModel("gemini-2.5-flash")
+
+
+def classify_query(user_query):
+
+    prompt = f"""
+    Classify this business query into ONLY one category.
+
+    Categories:
+    customer
+    inventory
+    sales
+    purchase_order
+
+    Query:
+    {user_query}
+
+    Return only the category name.
+    """
+
+    response = model.generate_content(prompt)
+
+    return response.text.strip().lower()
+
+
 st.header("Business Insights")
 
 user_query = st.text_input(
     "Ask a business question"
 )
 
-# Question 1
 if user_query:
 
-    query = user_query.lower()
+    intent = classify_query(user_query)
 
-    # Credit Limit
-    if "credit" in query:
+    st.success(f"Detected Intent: {intent}")
+
+    # Customer Analysis
+    if intent == "customer":
 
         customers["utilization_pct"] = (
             customers["outstanding"] /
@@ -38,8 +69,8 @@ if user_query:
         st.subheader("Customers Above 80% Credit Limit")
         st.dataframe(result)
 
-    # Inventory
-    elif "inventory" in query:
+    # Inventory Analysis
+    elif intent == "inventory":
 
         inventory["inventory_value"] = (
             inventory["quantity"] *
@@ -53,8 +84,8 @@ if user_query:
             f"₹{total_value:,.0f}"
         )
 
-    # Sales
-    elif "sales" in query:
+    # Sales Analysis
+    elif intent == "sales":
 
         sales_summary = (
             sales.groupby("customer_id")["amount"]
@@ -67,10 +98,12 @@ if user_query:
         st.subheader("Top Customers by Sales")
         st.dataframe(sales_summary)
 
-    # Purchase Orders
-    elif "purchase" in query or "po" in query:
+    # Purchase Order Analysis
+    elif intent == "purchase_order":
 
-        open_po = po[po["status"] == "Open"]
+        open_po = po[
+            po["status"].str.lower() == "open"
+        ]
 
         st.subheader("Open Purchase Orders")
         st.dataframe(open_po)
@@ -78,5 +111,5 @@ if user_query:
     else:
 
         st.warning(
-            "Question not supported yet."
+            "Unable to determine the correct business area."
         )
