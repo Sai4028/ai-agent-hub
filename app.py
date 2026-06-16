@@ -662,24 +662,29 @@ if user_query:
         # RISK 
         
         elif tool == "risk_sales_tool":
+
+            tool_function = TOOLS[tool]["function"]
+
+            tool_data = DATASETS[tool]
+
     
-        result = risk_sales_tool(params)
-    
-        log_query(
-            user_query,
-            tool,
-            decision,
-            result
-        )
-    
-        st.subheader(
-            "Risk vs Sales Analysis"
-        )
-    
-        render_result(
-            result,
-            params
-        )
+            result = risk_sales_tool(params)
+        
+            log_query(
+                user_query,
+                tool,
+                decision,
+                result
+            )
+        
+            st.subheader(
+                "Risk vs Sales Analysis"
+            )
+        
+            render_result(
+                result,
+                params
+            )
 
         # CUSTOMER
 
