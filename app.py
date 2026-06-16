@@ -170,11 +170,11 @@ def kpi_tool(params):
     return pd.DataFrame([
         {
             "KPI": "Total Sales",
-            "Value": total_sales
+            "Value": f"₹{total_sales:,.0f}"
         },
         {
             "KPI": "Inventory Value",
-            "Value": inventory_value
+            "Value": f"₹{inventory_value:,.0f}"
         },
         {
             "KPI": "Open Purchase Orders",
