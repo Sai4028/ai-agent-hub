@@ -67,28 +67,26 @@ def customer_tool(df, action, params):
     return df
 
 
-def sales_tool(df, action, params):
+def sales_tool(df, params):
 
-    if action == "top_customers":
+    metric = params.get("metric", "amount")
+    sort = params.get("sort", "desc")
+    limit = params.get("limit", 10)
 
-        limit = params.get("limit", 10)
+    result = (
+        df.groupby("customer_id")[metric]
+        .sum()
+        .reset_index()
+    )
 
-        result = (
-            df.groupby("customer_id")["amount"]
-            .sum()
-            .reset_index()
-            .sort_values("amount", ascending=False)
-            .head(limit)
-        )
+    ascending = sort == "asc"
 
-        return result
+    result = result.sort_values(
+        metric,
+        ascending=ascending
+    ).head(limit)
 
-    elif action == "total_sales":
-
-        return df["amount"].sum()
-
-    return df
-
+    return result
 
 def inventory_tool(df, action, params):
 
@@ -170,25 +168,11 @@ User:
 Show risky customers
 
 Output:
-{{
-"tool":"customer_tool",
-"action":"high_credit_utilization",
-"parameters": {{
-"threshold":80
-}}
-}}
 
 User:
 Show customers above 70% credit utilization
 
 Output:
-{{
-"tool":"customer_tool",
-"action":"high_credit_utilization",
-"parameters": {{
-"threshold":70
-}}
-}}
 
 User:
 Show top 5 customers by sales
@@ -250,10 +234,15 @@ if user_query:
 
         st.json(decision)
 
-        tool = decision["tool"]
-        action = decision["action"]
-        params = decision.get("parameters", {})
+       tool = decision["tool"]
 
+        params = {
+            "metric": decision.get("metric"),
+            "sort": decision.get("sort", "desc"),
+            "limit": decision.get("limit", 10),
+            "threshold": decision.get("threshold"),
+            "presentation": decision.get("presentation", "table")
+        }
         # CUSTOMER
 
         if tool == "customer_tool":
@@ -274,23 +263,29 @@ if user_query:
         # SALES
 
         elif tool == "sales_tool":
-
+        
             result = sales_tool(
                 sales,
-                action,
                 params
             )
-
+        
             st.subheader("Sales Results")
-
-            if isinstance(result, pd.DataFrame):
-                st.dataframe(result)
-            else:
-                st.metric(
-                    "Total Sales",
-                    f"₹{result:,.0f}"
+        
+            presentation = params.get(
+                "presentation",
+                "table"
+            )
+        
+            if presentation == "bar_chart":
+        
+                st.bar_chart(
+                    result.set_index("customer_id")
                 )
-
+        
+            else:
+        
+                st.dataframe(result)
+        
         # INVENTORY
 
         elif tool == "inventory_tool":
