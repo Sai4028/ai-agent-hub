@@ -479,10 +479,10 @@ User:
 Show business KPI dashboard
 
 Output:
-{
+{{
 "tool":"kpi_tool",
 "presentation":"table"
-}
+}}
 
 User:
 Show business health summary
