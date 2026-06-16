@@ -581,6 +581,28 @@ if user_query:
         }
         # CUSTOMER
 
+        if tool == "kpi_tool":
+
+    result = kpi_tool(params)
+
+    log_query(
+        user_query,
+        tool,
+        decision,
+        result
+    )
+
+    st.subheader("Business KPIs")
+
+    render_result(
+        result,
+        params
+    )
+
+# CUSTOMER
+
+elif tool == "customer_tool":
+        
         if tool == "customer_tool":
 
             tool_function = TOOLS[tool]["function"]
