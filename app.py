@@ -579,9 +579,9 @@ if user_query:
             "threshold": decision.get("threshold"),
             "presentation": decision.get("presentation", "table")
         }
-        # CUSTOMER
+# KPI
 
-        if tool == "kpi_tool":
+if tool == "kpi_tool":
 
     result = kpi_tool(params)
 
@@ -602,136 +602,123 @@ if user_query:
 # CUSTOMER
 
 elif tool == "customer_tool":
-        
-        if tool == "customer_tool":
 
-            tool_function = TOOLS[tool]["function"]
-        
-            tool_data = DATASETS[tool]
-        
-            result = tool_function(
-                tool_data,
-                params
-            )
+    tool_function = TOOLS[tool]["function"]
 
+    tool_data = DATASETS[tool]
 
-            log_query(
-                user_query,
-                tool,
-                decision,
-                result
-            )
+    result = tool_function(
+        tool_data,
+        params
+    )
 
-            st.subheader("Customer Results")
+    log_query(
+        user_query,
+        tool,
+        decision,
+        result
+    )
 
-            if isinstance(result, pd.DataFrame):
-                render_result(
-                    result,
-                    params
-                )
-            else:
-                st.write(result)
+    st.subheader("Customer Results")
 
-        # SALES
+    render_result(
+        result,
+        params
+    )
 
-        elif tool == "sales_tool":
-        
-            tool_function = TOOLS[tool]["function"]
-        
-            tool_data = DATASETS[tool]
-        
-            result = tool_function(
-                tool_data,
-                params
-            )
+# SALES
 
-            log_query(
-                user_query,
-                tool,
-                decision,
-                result
-            )
-        
-            st.subheader("Sales Results")
-        
-            presentation = params.get(
-                "presentation",
-                "table"
-            )
-            
-            if presentation == "bar_chart":
-            
-                st.bar_chart(
-                    result.set_index("customer_id")["amount"]
-                )
-            
-            else:
-            
-                render_result(
-                    result,
-                    params
-                )
-        
-        # INVENTORY
+elif tool == "sales_tool":
 
-        elif tool == "inventory_tool":
+    tool_function = TOOLS[tool]["function"]
 
-            tool_function = TOOLS[tool]["function"]
-        
-            tool_data = DATASETS[tool]
-        
-            result = tool_function(
-                tool_data,
-                params
-            )
+    tool_data = DATASETS[tool]
 
+    result = tool_function(
+        tool_data,
+        params
+    )
 
-            log_query(
-                user_query,
-                tool,
-                decision,
-                result
-            )
+    log_query(
+        user_query,
+        tool,
+        decision,
+        result
+    )
 
-            st.subheader("Inventory Results")
+    st.subheader("Sales Results")
 
-            if isinstance(result, pd.DataFrame):
-                render_result(
-                    result,
-                    params
-                )
-            else:
-                st.metric(
-                    "Inventory Value",
-                    f"₹{result:,.0f}"
-                )
+    presentation = params.get(
+        "presentation",
+        "table"
+    )
 
-        # PO
+    if presentation == "bar_chart":
 
-        elif tool == "po_tool":
+        st.bar_chart(
+            result.set_index("customer_id")["amount"]
+        )
 
-            tool_function = TOOLS[tool]["function"]
-        
-            tool_data = DATASETS[tool]
-        
-            result = tool_function(
-                tool_data,
-                params
-            )
+    else:
 
-            st.subheader("Purchase Order Results")
+        render_result(
+            result,
+            params
+        )
 
-            render_result(
-                result,
-                params
-            )
+# INVENTORY
 
-            log_query(
-                user_query,
-                tool,
-                decision,
-                result
-            )
+elif tool == "inventory_tool":
+
+    tool_function = TOOLS[tool]["function"]
+
+    tool_data = DATASETS[tool]
+
+    result = tool_function(
+        tool_data,
+        params
+    )
+
+    log_query(
+        user_query,
+        tool,
+        decision,
+        result
+    )
+
+    st.subheader("Inventory Results")
+
+    render_result(
+        result,
+        params
+    )
+
+# PO
+
+elif tool == "po_tool":
+
+    tool_function = TOOLS[tool]["function"]
+
+    tool_data = DATASETS[tool]
+
+    result = tool_function(
+        tool_data,
+        params
+    )
+
+    log_query(
+        user_query,
+        tool,
+        decision,
+        result
+    )
+
+    st.subheader("Purchase Order Results")
+
+    render_result(
+        result,
+        params
+    )
     except Exception as e:
 
         st.error(f"Error: {e}")
