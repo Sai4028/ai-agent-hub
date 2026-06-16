@@ -595,16 +595,14 @@ if user_query:
 
         st.error(f"Error: {e}")
    
-    st.divider()
-    
-    st.subheader("Audit Log")
-    
+with st.expander("Agent Audit Log"):
+
     if os.path.exists("audit_log.csv"):
-    
+
         audit_df = pd.read_csv(
             "audit_log.csv"
         )
-    
+
         st.dataframe(
             audit_df.tail(20)
         )
